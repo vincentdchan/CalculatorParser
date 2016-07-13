@@ -1,12 +1,6 @@
 #include "stdafx.h"
 #include "lex.h"
 
-int getPrecedence(OperatorType ot)
-{
-	if (ot >= OperatorType::OP_NUM || ot < 0) return -1;
-	return OpreatorPrecedence[ot];
-}
-
 namespace lex
 {
 	using namespace std;

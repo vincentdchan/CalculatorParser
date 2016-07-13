@@ -42,7 +42,11 @@ typedef int32_t uc32;
 	};
 #undef E
 
-int getPrecedence(OperatorType ot);
+inline int getPrecedence(OperatorType ot)
+{
+	if (ot >= OperatorType::OP_NUM || ot < 0) return -1;
+	return OpreatorPrecedence[ot];
+}
 
 namespace lex
 {
