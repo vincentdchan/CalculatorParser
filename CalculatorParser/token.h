@@ -16,6 +16,9 @@ typedef int32_t uc32;
 
 #define TOKEN_LIST(V) \
 	V(ILLEGAL) \
+	V(LET) \
+	V(ASSIGN) \
+	V(IDENTIFIER) \
 	V(OPEN_PAREN) \
 	V(CLOSE_PAREN) \
 	V(NUMBER) \

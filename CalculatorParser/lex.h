@@ -1,15 +1,17 @@
 #pragma once
-#include "token.h"
 #include <queue>
 #include <istream>
 #include <sstream>
 #include <memory>
+#include <list>
+#include "token.h"
+#include "util.h"
 
 namespace lex
 {
 	using namespace std;
 
-	class Lexer
+	class Lexer final: utils::_MessageContainer
 	{
 	public:
 		typedef shared_ptr<string> pString;
@@ -21,11 +23,14 @@ namespace lex
 			return _end;
 		}
 		static bool isDigit(uc32 t);
+		static bool isAlphabet(uc32 t);
 		string consumeLiteral();
 	private:
 		Lexer();
 		bool readline();
 		void scanNumber(string&, unsigned int&);
+		void scanLet(string&, unsigned int&);
+		void scanIdentifier(string&, unsigned int&);
 		queue<Token> token_q;
 		queue<string> literal_q;
 		bool _end;
