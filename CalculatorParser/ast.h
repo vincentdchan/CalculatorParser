@@ -5,6 +5,8 @@
 #include "token.h"
 
 #define NODE_LIST(V) \
+	V(Identifier) \
+	V(Assignment) \
 	V(Number) \
 	V(BinaryExpr) \
 	V(UnaryExpr) \
@@ -23,10 +25,51 @@ namespace parser
 	public:
 		Node() {}
 		virtual NumberNode* asNumber() { return nullptr; }
+		virtual IdentifierNode* asIdentifier() { return nullptr; }
+		virtual AssignmentNode* asAssignment() { return nullptr; }
 		virtual UnaryExprNode* asUnaryExpression() { return nullptr; }
 		virtual BlockExprNode* asBlockExpression() { return nullptr; }
 		virtual BinaryExprNode* asBinaryExpression() { return nullptr; }
 		virtual ~Node() {}
+	};
+
+	class IdentifierNode : public Node
+	{
+	public:
+		IdentifierNode(const std::string& _str) : _name(_str)
+		{}
+		virtual IdentifierNode* asIdentifier() override { return this; }
+		std::string Name() { return _name; }
+		void setName(std::string _str) { _name = _str; }
+	private:
+		std::string _name;
+	};
+
+	class AssignmentNode : public Node
+	{
+	public:
+		AssignmentNode() {}
+		AssignmentNode(const std::string& _id, Node* _exp):
+			_identifier(_id), _expression(_exp)
+		{}
+		virtual AssignmentNode* asAssignment() override { return this; }
+		void setIdentifier(const std::string& _str) { _identifier = _str; }
+		Node* setExpression(Node* _exp) 
+		{ 
+			Node* tmp = _expression;
+			_expression = _exp;
+			return tmp;
+		}
+		std::string Identifier() { return _identifier; }
+		Node* Expression() { return _expression; }
+		virtual ~AssignmentNode()
+		{
+			if (_expression)
+				delete _expression;
+		}
+	private:
+		std::string _identifier;
+		Node* _expression;
 	};
 
 	class BlockExprNode : public Node

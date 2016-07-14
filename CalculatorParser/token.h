@@ -42,6 +42,16 @@ typedef int32_t uc32;
 	};
 #undef E
 
+#define E(NAME, STR, PRE) #NAME ,
+#define ET(NAME) #NAME ,
+	const static char* TokenName[] =
+	{
+		OPERATOR_LIST(E)
+		TOKEN_LIST(ET)
+	};
+#undef E
+#undef ET
+
 inline int getPrecedence(OperatorType ot)
 {
 	if (ot >= OperatorType::OP_NUM || ot < 0) return -1;

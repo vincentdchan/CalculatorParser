@@ -83,6 +83,29 @@ namespace parser
 		return node;
 	}
 
+	Node* Parser::parseLetExpr()
+	{
+		expect(Token::TYPE::LET);
+		return parseAssignment();
+	}
+
+	Node* Parser::parseAssignment()
+	{
+		expect(Token::TYPE::LET);
+		nextToken();
+		expect(Token::TYPE::IDENTIFIER);
+
+		string _id = consumeLiteral();
+		nextToken();
+		expect(Token::TYPE::ASSIGN);
+		nextToken();
+		Node* _exp = parseBinaryExpr();
+		if (_exp)
+			return new AssignmentNode(_id, _exp);
+		else
+			return nullptr;
+	}
+
 	Node* Parser::parseUnaryExpr()
 	{
 		// UnaryExpr: ( + | - )? Int

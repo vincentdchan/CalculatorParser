@@ -21,7 +21,8 @@ int main()
 
 	Parser parser(lexer);
 	parser.parse();
-	runtime::eval(parser.getAstRoot());
+	runtime::Environment env;
+	runtime::eval(parser.getAstRoot(), env);
 	/*
 	Token t;
 	while (t = lexer.read(), t != Token::TYPE::ENDFILE)
