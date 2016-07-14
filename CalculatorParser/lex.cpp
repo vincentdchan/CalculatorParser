@@ -80,7 +80,7 @@ namespace lex
 				break;
 			case'=':
 				token_q.push(Token(Token::TYPE::ASSIGN, move(loc)));
-				break;
+				++i; break;
 			default:
 				if (isAlphabet(line[i]) || line[i] == '_')
 					scanIdentifier(line, i);

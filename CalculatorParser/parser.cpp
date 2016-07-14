@@ -76,7 +76,11 @@ namespace parser
 	Node* Parser::parseLine()
 	{
 		// Line:: BinaryExpr ENDLINE
-		auto node = parseBinaryExpr();
+		Node *node;
+		if (match(Token::TYPE::LET))
+			node = parseLetExpr();
+		else
+			node = parseBinaryExpr();
 		if (!match(Token::TYPE::ENDLINE))
 			ReportError("Exprected end of line");
 		nextToken();
@@ -86,13 +90,12 @@ namespace parser
 	Node* Parser::parseLetExpr()
 	{
 		expect(Token::TYPE::LET);
+		nextToken();
 		return parseAssignment();
 	}
 
 	Node* Parser::parseAssignment()
 	{
-		expect(Token::TYPE::LET);
-		nextToken();
 		expect(Token::TYPE::IDENTIFIER);
 
 		string _id = consumeLiteral();
@@ -120,6 +123,12 @@ namespace parser
 				auto numberNode = new NumberNode(_data);
 				return numberNode;
 			}
+			else if (match(Token::TYPE::IDENTIFIER))
+			{
+				nextToken();
+				string s = consumeLiteral();
+				return new IdentifierNode(s);
+			}
 			else
 			{
 				ReportError("Expected number.");
@@ -137,6 +146,13 @@ namespace parser
 				NumberNode* numberNode = new NumberNode(_data * -1);
 				return numberNode;
 			}
+			else if (match(Token::TYPE::IDENTIFIER))
+			{
+				nextToken();
+				string s = consumeLiteral();
+				auto _node = new IdentifierNode(s);
+				return new UnaryExprNode(OperatorType::SUB, _node);
+			}
 			else
 			{
 				ReportError("Expected number");
@@ -147,6 +163,12 @@ namespace parser
 		{
 			nextToken();
 			return new NumberNode(stod(consumeLiteral()));
+		}
+		else if (match(Token::TYPE::IDENTIFIER))
+		{
+			nextToken();
+			string s = consumeLiteral();
+			return new IdentifierNode(s);
 		}
 		else
 		{
@@ -192,7 +214,7 @@ namespace parser
 			Node *l1, *l2;
 			l1 = nodeStack.top(); nodeStack.pop();
 			l2 = nodeStack.top(); nodeStack.pop();
-			nodeStack.push(new BinaryExprNode(opStack.top(), l1, l2));
+			nodeStack.push(new BinaryExprNode(opStack.top(), l2, l1));
 			opStack.pop();
 		}
 		return nodeStack.top();

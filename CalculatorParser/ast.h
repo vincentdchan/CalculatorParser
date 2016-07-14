@@ -91,10 +91,7 @@ namespace parser
 	class UnaryExprNode : public Node
 	{
 	public:
-		UnaryExprNode():
-			_op(OperatorType::ILLEGAL_OP), _child(nullptr)
-		{}
-		UnaryExprNode(OperatorType o, Node* _after):
+		UnaryExprNode(OperatorType o = OperatorType::ILLEGAL_OP, Node* _after = nullptr):
 			_op(o), _child(_after)
 		{}
 		OperatorType op() const { return _op; }

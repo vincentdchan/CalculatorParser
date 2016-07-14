@@ -19,7 +19,6 @@
     <Text Include="source.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="resuly.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
