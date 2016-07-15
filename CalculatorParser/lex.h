@@ -30,6 +30,10 @@ namespace lex
 		bool readline();
 		void scanNumber(string&, unsigned int&);
 		void scanLet(string&, unsigned int&);
+		void scanIf(string&, unsigned int&);
+		void scanElse(string&, unsigned int&);
+		void scanWhile(string&, unsigned int&);
+		void scanDef(string&, unsigned int&);
 		void scanIdentifier(string&, unsigned int&);
 		queue<Token> token_q;
 		queue<string> literal_q;

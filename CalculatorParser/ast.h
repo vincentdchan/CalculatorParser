@@ -10,7 +10,10 @@
 	V(Number) \
 	V(BinaryExpr) \
 	V(UnaryExpr) \
-	V(BlockExpr)
+	V(BlockExpr) \
+	V(IfStmt) \
+	V(WhileStmt) \
+	V(DefStmt) \
 
 namespace parser
 {
@@ -30,6 +33,9 @@ namespace parser
 		virtual UnaryExprNode* asUnaryExpression() { return nullptr; }
 		virtual BlockExprNode* asBlockExpression() { return nullptr; }
 		virtual BinaryExprNode* asBinaryExpression() { return nullptr; }
+		virtual IfStmtNode* asIfStmt() { return nullptr; }
+		virtual WhileStmtNode* asWhileStmt() { return nullptr; }
+		virtual DefStmtNode* asDefStmt() { return nullptr; }
 		virtual ~Node() {}
 	};
 
@@ -149,4 +155,57 @@ namespace parser
 	private:
 		double _value;
 	};
+
+	class IfStmtNode : public Node
+	{
+	public:
+		IfStmtNode(Node* _con = nullptr, Node* _cont = nullptr):
+			_condition(_con), _content(_cont)
+		{}
+		Node* Condition() { return _condition; }
+		Node* Content() { return _content; }
+		void setCondition(Node* _con) { _condition = _con; }
+		void setContent(Node* _con) { _content = _con; }
+ 		virtual IfStmtNode* asIfStmt() override { return this; }
+		virtual ~IfStmtNode()
+		{
+			delete _condition;
+			delete _content;
+		}
+	private:
+		Node* _condition;
+		Node* _content;
+	};
+
+	class WhileStmtNode : public Node
+	{
+	public:
+		WhileStmtNode(Node* _con = nullptr, Node* _cont = nullptr) :
+			_condition(_con), _content(_cont)
+		{}
+		Node* Condition() { return _condition; }
+		Node* Content() { return _content; }
+		void setCondition(Node* _con) { _condition = _con; }
+		void setContent(Node* _con) { _content = _con; }
+ 		virtual WhileStmtNode* asWhileStmt() override { return this; }
+		virtual ~WhileStmtNode()
+		{
+			delete _condition;
+			delete _content;
+		}
+	private:
+		Node* _condition;
+		Node* _content;
+	};
+
+	class DefStmtNode : public Node
+	{
+	public:
+		DefStmtNode() {}
+	private:
+		std::string _name;
+		std::vector<std::string> _parameters;
+		Node* _content;
+	};
+
 }

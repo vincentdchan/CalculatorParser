@@ -75,8 +75,19 @@ namespace lex
 			case '%':
 				token_q.push(Token(Token::TYPE::MOD, move(loc)));
 				++i; break;
-			case 'l':
+			case 'l': // let
 				scanLet(line, i);
+				break;
+			case 'i': // if
+				scanIf(line, i);
+				break;
+			case 'e': // else
+				scanElse(line, i);
+			case 'w': // while
+				scanWhile(line, i);
+				break;
+			case 'd': // def
+				scanDef(line, i);
 				break;
 			case'=':
 				token_q.push(Token(Token::TYPE::ASSIGN, move(loc)));
@@ -107,6 +118,65 @@ namespace lex
 		else
 		{
 			ReportError("Expected \"let\".", Location(linenumber, ic, ic+2));
+		}
+	}
+
+	void Lexer::scanIf(string& str, unsigned int& ic)
+	{
+		if (str[ic] == 'i' && str[ic + 1] == 'f')
+		{
+			token_q.push(Token(Token::TYPE::IF, Location(linenumber, ic, ic + 1)));
+			ic += 2;
+		}
+		else
+		{
+			ReportError("Expected \"if\".", Location(linenumber, ic, ic + 1));
+		}
+	}
+
+	void Lexer::scanElse(string& str, unsigned int& ic)
+	{
+		if (str[ic] == 'e' &&
+			str[ic + 1] == 'l' &&
+			str[ic + 2] == 's' &&
+			str[ic + 3] == 'e')
+		{
+			token_q.push(Token(Token::TYPE::ELSE, Location(linenumber, ic, ic + 3)));
+			ic += 4;
+		}
+		else
+		{
+			ReportError("Expect \"else\".");
+		}
+	}
+
+	void Lexer::scanWhile(string& str, unsigned int &ic)
+	{
+		if (str[ic] == 'w' &&
+			str[ic + 1] == 'h' &&
+			str[ic + 2] == 'i' &&
+			str[ic + 3] == 'l' &&
+			str[ic + 4] == 'e')
+		{
+			token_q.push(Token(Token::WHILE, Location(linenumber, ic, ic + 4)));
+			ic += 5;
+		}
+		else
+		{
+			ReportError("Expect \"while\".");
+		}
+	}
+
+	void Lexer::scanDef(string& str, unsigned int& ic)
+	{
+		if (str[ic] == 'd' && str[ic + 1] == 'e' && str[ic + 2] == 'f') 
+		{
+			token_q.push(Token(Token::DEF, Location(linenumber, ic, ic + 2)));
+			ic += 3;
+		}
+		else
+		{
+			ReportError("Expect \"def\".");
 		}
 	}
 

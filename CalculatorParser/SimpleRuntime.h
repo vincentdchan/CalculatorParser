@@ -103,5 +103,13 @@ namespace runtime
 			// if (env.getValue(_name) == nullptr)  Runtime Error
 			return eval(env.getValue(_name), env);
 		}
+		else if (root->asIfStmt())
+		{
+			auto _node = root->asIfStmt();
+			double condition = eval(_node->Condition());
+			if (condition != 0)
+				return eval(_node->Content());
+			return 0.0;
+		}
 	}
 }
