@@ -106,10 +106,21 @@ namespace runtime
 		else if (root->asIfStmt())
 		{
 			auto _node = root->asIfStmt();
-			double condition = eval(_node->Condition());
+			double condition = eval(_node->Condition(), env);
 			if (condition != 0)
-				return eval(_node->Content());
+				return eval(_node->Content(), env);
 			return 0.0;
 		}
+		else if (root->asWhileStmt())
+		{
+			auto _node = root->asWhileStmt();
+			double condition = eval(_node->Condition(), env);
+			while (fabs(condition - 0.0) < 0.00001)
+			{
+				eval(_node->Content(), env);
+				condition = eval(_node->Condition(), env);
+			}
+		}
+		return 0;
 	}
 }

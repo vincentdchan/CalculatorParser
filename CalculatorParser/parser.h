@@ -43,6 +43,9 @@ namespace parser
 		Node* parseAssignment();
 		Node* parseUnaryExpr();
 		Node* parseBinaryExpr();
+		// Node* parseIfStmt();
+		Node* parseWhileStmt();
+		Node* parseDefStmt();
 		Parser() = delete;
 		Parser(const Parser&) = delete;
 		Parser& operator=(const Parser&) = delete;

@@ -204,7 +204,7 @@ namespace parser
 		DefStmtNode() {}
 	private:
 		std::string _name;
-		std::vector<std::string> _parameters;
+		std::unique_ptr<std::vector<std::string> > _parameters;
 		Node* _content;
 	};
 

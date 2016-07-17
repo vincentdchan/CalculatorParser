@@ -220,6 +220,26 @@ namespace parser
 		return nodeStack.top();
 	}
 
+	Node* Parser::parseWhileStmt()
+	{
+		expect(Token::TYPE::WHILE);
+		nextToken();
+		Node* _condition = parseBinaryExpr();
+		Node* _block = parseBlock();
+		return new WhileStmtNode(_condition, _block);
+	}
+
+	Node* Parser::parseDefStmt()
+	{
+		expect(Token::TYPE::DEF); nextToken();
+		expect(Token::TYPE::OPEN_PAREN); nextToken();
+		while (match(Token::TYPE::IDENTIFIER))
+		{
+
+		}
+		return nullptr;
+	}
+
 	Node* const Parser::getAstRoot() 
 	{ 
 		return ast_root; 
