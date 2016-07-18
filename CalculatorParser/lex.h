@@ -24,7 +24,7 @@ namespace lex
 		}
 		static bool isDigit(uc32 t);
 		static bool isAlphabet(uc32 t);
-		string consumeLiteral();
+		// string consumeLiteral();
 	private:
 		Lexer();
 		bool readline();
@@ -36,7 +36,7 @@ namespace lex
 		void scanDef(string&, unsigned int&);
 		void scanIdentifier(string&, unsigned int&);
 		queue<Token> token_q;
-		queue<string> literal_q;
+		// queue<string> literal_q;
 		bool _end;
 		unsigned int linenumber, _beginpos, _endpos;
 		// stream

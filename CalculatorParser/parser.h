@@ -27,7 +27,7 @@ namespace parser
 		Token nextToken();
 		Token lookahead;
 		void parse();
-		string consumeLiteral();
+		// string consumeLiteral();
 		void ReportMessage(const string&, MESSAGE_TYPE _mt);
 		void ReportError(const string&);
 		bool isOk() const { return ok; }

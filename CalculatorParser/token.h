@@ -74,6 +74,7 @@ namespace lex
 		int line;
 		int begin, end;
 	};
+
 	class Token
 	{
 	public:
@@ -87,26 +88,34 @@ namespace lex
 		};
 #undef EXTEND_OP
 #undef EXTEND_TOKEN
+		Location location;
+		std::unique_ptr<std::string> pLiteral;
+
 		Token(): _type(ILLEGAL)
 		{}
 
+		Token(const Token& _target) = delete;
+		/*
 		Token(const Token& _target)
 		{
 			_type = _target._type;
 			location = _target.location;
+			pLiteral = move(_target.pLiteral);
 		}
+		*/
 
-		Token(TYPE&& _t, Location&& _loc)
+		Token(TYPE _t, Location _loc)
 		{
-			_type = move(_t);
-			location = move(_loc);
+			_type = _t;
+			location = _loc;
 		}
 
 
 		Token(Token&& _target)
 		{
-			_type = move(_target._type);
-			location = move(_target.location);
+			_type = _target._type;
+			location = _target.location;
+			pLiteral = move(_target.pLiteral);
 		}
 
 		void set_type(TYPE t)
@@ -118,14 +127,13 @@ namespace lex
 		{
 			return  _type;
 		}
-		Location location;
 
 		static bool isOperator(const Token& t)
 		{
 			return t.type() >= ADD && t.type() < ILLEGAL_OP;
 		}
 
-		static OperatorType toOperator(Token t)
+		static OperatorType toOperator(const Token& t)
 		{
 			if (t.type() >= Token::ADD && t.type() <= Token::ILLEGAL_OP)
 				return static_cast<OperatorType>(t.type());
@@ -133,17 +141,21 @@ namespace lex
 				return OperatorType::ILLEGAL_OP;
 		}
 
+		Token& operator=(const Token& _t) = delete;
+		/*
 		Token& operator=(const Token& _t)
 		{
 			_type = _t._type;
 			location = _t.location;
 			return *this;
 		}
+		*/
 
 		Token& operator=(Token&& _t)
 		{
-			_type = move(_t._type);
-			location = move(_t.location);
+			_type = _t._type;
+			location = _t.location;
+			pLiteral = move(_t.pLiteral);
 			return *this;
 		}
 

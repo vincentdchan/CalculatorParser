@@ -15,7 +15,7 @@ namespace lex
 	{
 		if (!token_q.empty())
 		{
-			Token t = token_q.front();
+			Token t = move(token_q.front());
 			token_q.pop();
 			return t;
 		}
@@ -49,31 +49,31 @@ namespace lex
 			case '\n':
 			case ' ': ++i; break;
 			case '(':
-				token_q.push(Token(Token::TYPE::OPEN_PAREN, move(loc)));
+				token_q.push(Token(Token::TYPE::OPEN_PAREN, loc));
 				++i; break;
 			case ')':
-				token_q.push(Token(Token::TYPE::CLOSE_PAREN, move(loc)));
+				token_q.push(Token(Token::TYPE::CLOSE_PAREN, loc));
 				++i; break;
 			case '+':
-				token_q.push(Token(Token::TYPE::ADD, move(loc)));
+				token_q.push(Token(Token::TYPE::ADD, loc));
 				++i; break;
 			case '-':
-				token_q.push(Token(Token::TYPE::SUB, move(loc)));
+				token_q.push(Token(Token::TYPE::SUB, loc));
 				++i; break;
 			case '*':
 				if (i + 1 != line.size() && line[i + 1] != '*')
-					token_q.push(Token(Token::TYPE::MUL, move(loc)));
+					token_q.push(Token(Token::TYPE::MUL, loc));
 				else
 				{
-					token_q.push(Token(Token::TYPE::POW, move(loc)));
+					token_q.push(Token(Token::TYPE::POW, loc));
 					++i;
 				}
 				++i; break;
 			case '/':
-				token_q.push(Token(Token::TYPE::DIV, move(loc)));
+				token_q.push(Token(Token::TYPE::DIV, loc));
 				++i; break;
 			case '%':
-				token_q.push(Token(Token::TYPE::MOD, move(loc)));
+				token_q.push(Token(Token::TYPE::MOD, loc));
 				++i; break;
 			case 'l': // let
 				scanLet(line, i);
@@ -90,7 +90,7 @@ namespace lex
 				scanDef(line, i);
 				break;
 			case'=':
-				token_q.push(Token(Token::TYPE::ASSIGN, move(loc)));
+				token_q.push(Token(Token::TYPE::ASSIGN, loc));
 				++i; break;
 			default:
 				if (isAlphabet(line[i]) || line[i] == '_')
@@ -182,19 +182,19 @@ namespace lex
 
 	void Lexer::scanIdentifier(string& str, unsigned int& ic)
 	{
-		string _literal;
 		if (isAlphabet(str[ic]) || str[ic] == '_')
 		{
 			const unsigned int _begin = ic;
-			_literal.push_back(str[ic]);
+			Token _t(Token::TYPE::IDENTIFIER, Location(linenumber, _begin, ic-1));
+			_t.pLiteral.reset(new string());
+			_t.pLiteral->push_back(str[ic]);
 			ic++;
 			while (isDigit(str[ic]) || isAlphabet(str[ic]) || str[ic] == '_')
 			{
-				_literal.push_back(str[ic]);
+				_t.pLiteral->push_back(str[ic]);
 				ic++;
 			}
-			token_q.push(Token(Token::TYPE::IDENTIFIER, Location(linenumber, _begin, ic - 1)));
-			literal_q.push(move(_literal));
+			token_q.push(move(_t));
 		}
 		else
 		{
@@ -209,23 +209,23 @@ namespace lex
 		loc.begin = loc.end = ic;
 		loc.line = linenumber;
 
-		string num;
+		// string num;
 		if (isDigit(str[ic]))
 		{
 			t.set_type(Token::TYPE::NUMBER);
-			num.push_back(str[ic++]);
+			t.pLiteral.reset(new string());
+			t.pLiteral->push_back(str[ic++]);
 			while (isDigit(str[ic]) || str[ic] == '.')
 			{
 				if (str[ic] == '.')
 				{
-					num.push_back(str[ic++]);
+					t.pLiteral->push_back(str[ic++]);
 					if (isDigit(str[ic]))
 					{
 						while (isDigit(str[ic]))
-							num.push_back(str[ic++]);
+							t.pLiteral->push_back(str[ic++]);
 						loc.end = ic - 1;
 						token_q.push(move(t));
-						literal_q.push(move(num));
 						return;
 					}
 					else
@@ -235,12 +235,11 @@ namespace lex
 				}
 				else // digit
 				{
-					num.push_back(str[ic++]);
+					t.pLiteral->push_back(str[ic++]);
 				}
 			}
 			loc.end = ic - 1;
 			token_q.push(move(t));
-			literal_q.push(move(num));
 		}
 		else
 		{
@@ -264,6 +263,7 @@ namespace lex
 		return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 	}
 
+	/*
 	string Lexer::consumeLiteral()
 	{
 		if (literal_q.empty())
@@ -275,4 +275,5 @@ namespace lex
 			return t;
 		}
 	}
+	*/
 }

@@ -49,15 +49,17 @@ namespace parser
 
 	Token Parser::nextToken()
 	{
-		Token tmp = lookahead;
-		lookahead = move(lexer.read());
+		Token tmp = move(lookahead);
+		lookahead = lexer.read();
 		return tmp;
 	}
 
+	/*
 	string Parser::consumeLiteral()
 	{
 		return lexer.consumeLiteral();
 	}
+	*/
 
 	Node* Parser::parseBlock()
 	{
@@ -98,7 +100,7 @@ namespace parser
 	{
 		expect(Token::TYPE::IDENTIFIER);
 
-		string _id = consumeLiteral();
+		string _id = *lookahead.pLiteral;
 		nextToken();
 		expect(Token::TYPE::ASSIGN);
 		nextToken();
@@ -117,16 +119,15 @@ namespace parser
 			nextToken();
 			if (match(Token::TYPE::NUMBER))
 			{
-				nextToken();
-				string s = consumeLiteral();
-				double _data = std::stod(s);
+				double _data = std::stod(*lookahead.pLiteral);
 				auto numberNode = new NumberNode(_data);
+				nextToken();
 				return numberNode;
 			}
 			else if (match(Token::TYPE::IDENTIFIER))
 			{
+				string s = *lookahead.pLiteral;
 				nextToken();
-				string s = consumeLiteral();
 				return new IdentifierNode(s);
 			}
 			else
@@ -140,17 +141,15 @@ namespace parser
 			nextToken();
 			if (match(Token::Token::NUMBER))
 			{
+				double _data = std::stod(*lookahead.pLiteral);
 				nextToken();
-				auto s = consumeLiteral();
-				double _data = std::stod(s);
 				NumberNode* numberNode = new NumberNode(_data * -1);
 				return numberNode;
 			}
 			else if (match(Token::TYPE::IDENTIFIER))
 			{
-				nextToken();
-				string s = consumeLiteral();
-				auto _node = new IdentifierNode(s);
+				Token _t = move(nextToken());
+				auto _node = new IdentifierNode(*_t.pLiteral);
 				return new UnaryExprNode(OperatorType::SUB, _node);
 			}
 			else
@@ -161,14 +160,13 @@ namespace parser
 		}
 		else if (match(Token::TYPE::NUMBER))
 		{
-			nextToken();
-			return new NumberNode(stod(consumeLiteral()));
+			Token _t = move(nextToken());
+			return new NumberNode(stod(*_t.pLiteral));
 		}
 		else if (match(Token::TYPE::IDENTIFIER))
 		{
-			nextToken();
-			string s = consumeLiteral();
-			return new IdentifierNode(s);
+			Token _t = move(nextToken());
+			return new IdentifierNode(*_t.pLiteral);
 		}
 		else
 		{
