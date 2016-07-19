@@ -9,7 +9,6 @@
 #include "scanner.h"
 #include "ast.h"
 #include "parser.h"
-#include "SimpleRuntime.h"
 
 int main()
 {
@@ -21,8 +20,6 @@ int main()
 
 	Parser parser(lexer);
 	parser.parse();
-	runtime::Environment env;
-	runtime::eval(parser.getAstRoot(), env);
 	/*
 	Token t;
 	while (t = lexer.read(), t != Token::TYPE::ENDFILE)

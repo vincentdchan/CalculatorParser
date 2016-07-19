@@ -23,29 +23,26 @@ namespace parser
 		};
 		Parser(Lexer& _lex);
 		Parser(Parser&& _parser);
-		// void next();
 		Token nextToken();
 		Token lookahead;
 		void parse();
-		// string consumeLiteral();
 		void ReportMessage(const string&, MESSAGE_TYPE _mt);
 		void ReportError(const string&);
 		bool isOk() const { return ok; }
-		Node* const getAstRoot();
-		Node* popAstRoot();
-		~Parser();
+
+		std::unique_ptr<Node> ast_root;
+		~Parser() {}
 	private:
 		bool ok;
-		Node* ast_root;
-		Node* parseBlock();
-		Node* parseLine();
-		Node* parseLetExpr();
-		Node* parseAssignment();
-		Node* parseUnaryExpr();
-		Node* parseBinaryExpr();
+		std::unique_ptr<Node> parseBlock();
+		std::unique_ptr<Node> parseLine();
+		std::unique_ptr<Node> parseLetExpr();
+		std::unique_ptr<Node> parseAssignment();
+		std::unique_ptr<Node> parseUnaryExpr();
+		std::unique_ptr<Node> parseBinaryExpr();
 		// Node* parseIfStmt();
-		Node* parseWhileStmt();
-		Node* parseDefStmt();
+		std::unique_ptr<Node> parseWhileStmt();
+		// std::unique_ptr<Node> parseDefStmt();
 		Parser() = delete;
 		Parser(const Parser&) = delete;
 		Parser& operator=(const Parser&) = delete;
