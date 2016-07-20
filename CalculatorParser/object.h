@@ -1,18 +1,21 @@
 #pragma once
 #include <map>
+#include <cmath>
+#include <ostream>
+#include <string>
+#include "CalculatorParser.h"
 
 #define OBJ_LIST(V) \
 	V(NUL) \
 	V(GC) \
 	V(STRING) \
 	V(SMALL_INT) \
-	V(NUMBER)
+	V(NUMBER) \
+	V(BOOL)
 
 
 namespace runtime
 {
-	typedef double TNumber;
-	typedef int TSmallInt;
 
 	class Object;
 
@@ -28,6 +31,7 @@ namespace runtime
 		GCObject* gc;
 		TSmallInt si;		// small int
 		TNumber number;
+		TBool bl;
 	};
 
 	/********************************/
@@ -36,7 +40,7 @@ namespace runtime
 	/*  v-tables                    */
 	/********************************/
 
-	TNumber _GetNumVal(Object _obj);
+	TNumber toNumber(Object _obj);
 
 	class Object
 	{
@@ -54,12 +58,14 @@ namespace runtime
 		explicit Object(GCObject* _object) : type(TYPE::GC) { value.gc = _object; }
 		explicit Object(TSmallInt _int) : type(TYPE::SMALL_INT) { value.si = _int; }
 		explicit Object(TNumber _num) : type(TYPE::NUMBER) { value.number = _num; }
+		explicit Object(TBool _bl) : type(TYPE::BOOL) { value.bl = _bl; }
 
 		inline bool isNul() const { return type == TYPE::NUL; }
 		inline bool isGCObject() const { return type == TYPE::GC; }
 		inline bool isString() const { return type == TYPE::STRING; }
 		inline bool isSmallInt() const { return type == TYPE::SMALL_INT; }
 		inline bool isNumber() const { return type == TYPE::NUMBER; }
+		inline bool isBool() const { return type == TYPE::BOOL; }
 
 		inline void setNull() 
 		{ 
@@ -84,62 +90,72 @@ namespace runtime
 		inline void setSmallInt(TSmallInt num)
 		{
 			value.si = num;
-			type = TYPE::NUMBER;
+			type = TYPE::SMALL_INT;
 		}
 
-#define OP_HANDLE(OP) \
-if (isSmallInt() && that.isSmallInt()) \
-	return Object(value.number OP that.value.number); \
-else if ((isSmallInt() || isNumber()) && (that.isNumber() || that.isSmallInt())) \
-	return Object(_GetNumVal(*this) OP _GetNumVal(that)); \
-else \
-	return Object();
-
-		Object operator+(Object that) const
+		inline void setBool(TBool _bl)
 		{
-			OP_HANDLE(+)
+			value.bl = _bl;
+			type = TYPE::BOOL;
 		}
 
-		Object operator-(Object that) const
+		Object applyOperator(OperatorType op, Object that) const
 		{
-			OP_HANDLE(-)
-		}
-
-		Object operator*(Object that) const
-		{
-			OP_HANDLE(*)
-		}
-
-		Object operator/(Object that) const
-		{
-			OP_HANDLE(/)
+			switch (op)
+			{
+			case OperatorType::ADD:
+				if (isSmallInt() && that.isSmallInt())
+					// not a proper way
+					// you should check if overflow after they plus
+					return Object(value.si + that.value.si);
+				else if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
+					return Object(toNumber(*this) + toNumber(that));
+				break;
+			case OperatorType::SUB:
+				if (isSmallInt() && that.isSmallInt())
+					return Object(value.si - that.value.si);
+				else if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
+					return Object(toNumber(*this) - toNumber(that));
+				break;
+			case OperatorType::MUL:
+				if (isSmallInt() && that.isSmallInt())
+					return Object(value.si * that.value.si);
+				else if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
+					return Object(toNumber(*this) * toNumber(that));
+				break;
+			case OperatorType::DIV:
+				if (isSmallInt() && that.isSmallInt())
+					return Object(value.si / that.value.si);
+				else if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
+					return Object(toNumber(*this) / toNumber(that));
+				break;
+			case OperatorType::MOD:
+				if (isSmallInt() && that.isSmallInt())
+					return Object(value.si % that.value.si);
+				break;
+			case OperatorType::POW:
+				if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
+					return Object(pow(toNumber(*this), toNumber(that)));
+				break;
+			}
+			return Object();
 		}
 
 		operator bool() const
 		{
-			if (isSmallInt())
-				return value.si == 0;
+			if (isBool())
+				return value.bl;
+			else if (isSmallInt())
+				return value.si != 0;
 			else if (isNumber())
-				return abs(value.number) < 0.0000001;
+				return abs(value.number) > 0.0000001;
 			else if (isNul())
 				return false;
 			else
 				return true;
 		}
 
-		Object operator%(Object that) const
-		{
-			if (isSmallInt() && that.isSmallInt())
-				return Object(value.si % that.value.si);
-			else
-				return Object();
-		}
-
-		Object powWith(Object that) const
-		{
-			return Object(0.0);
-		}
-
+		/*
 		Object compareTo(Object that) const
 		{
 			return Object(0);
@@ -149,7 +165,12 @@ else \
 		{
 			return Object(0);
 		}
+		*/
 	};
+
+	static const char* STRUE = "True";
+	static const char* SFALSE = "False";
+	std::ostream& operator<<(std::ostream& _ost, Object _obj);
 
 	inline Object make_null()
 	{

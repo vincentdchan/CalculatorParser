@@ -48,7 +48,13 @@
     <ClInclude Include="object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stackmachine.h">
+    <ClInclude Include="CalculatorParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="svm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="svm_codes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,10 +71,10 @@
     <ClCompile Include="lex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stackmachine.cpp">
+    <ClCompile Include="object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="object.cpp">
+    <ClCompile Include="svm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
