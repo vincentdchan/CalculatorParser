@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClInclude Include="ast.h" />
     <ClInclude Include="CalculatorParser.h" />
+    <ClInclude Include="codegen.h" />
     <ClInclude Include="lex.h" />
     <ClInclude Include="object.h" />
     <ClInclude Include="parser.h" />
@@ -156,11 +157,12 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="token.h" />
     <ClInclude Include="util.h" />
-    <ClInclude Include="svm.h" />
+    <ClInclude Include="svm.hpp" />
     <ClInclude Include="svm_codes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CalculatorParser.cpp" />
+    <ClCompile Include="codegen.cpp" />
     <ClCompile Include="lex.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="parser.cpp" />
@@ -170,7 +172,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="svm.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

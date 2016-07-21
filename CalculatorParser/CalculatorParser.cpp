@@ -10,27 +10,14 @@
 #include "ast.h"
 #include "parser.h"
 #include "svm_codes.h"
-#include "svm.h"
+#include "svm.hpp"
+#include "codegen.h"
 
 int main()
 {
 	using namespace lex;
 	using namespace parser;
 	using namespace runtime::StackVM;
-
-	static Instruction ins[] = 
-	{ 
-		{VM_CODE::PushInt, 1}, 
-		{VM_CODE::PushInt, 1}, 
-		{VM_CODE::Add, 0}, 
-		{VM_CODE::PushInt, 2},
-		{VM_CODE::Mul, 2},
-		{VM_CODE::Out, 0},
-		{VM_CODE::STOP, 0}
-	};
-
-	StackVM* vm = new StackVM(ins);
-	vm->execute();
 
 	fstream fs;
 	fs.open("source.txt", fstream::in);
@@ -39,6 +26,19 @@ int main()
 	Parser parser(lexer);
 	parser.parse();
 	fs.close();
+
+
+	codegen::CodeGen cg(parser);
+	cg.generate();
+
+	auto state = new State(cg.pack.variablesSize, cg.pack.constant);
+	auto nvm = new StackVM<vector<Instruction>::iterator>(cg.pack.instructions.begin());
+	nvm->setState(state);
+	nvm->execute();
+
+	delete state;
+	delete nvm;
+
 
 	string ch;
 	cin >> ch;
