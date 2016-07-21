@@ -27,17 +27,28 @@ int main()
 	parser.parse();
 	fs.close();
 
+	if (!parser.hasError())
+	{
+		codegen::CodeGen cg(parser);
+		cg.generate();
 
-	codegen::CodeGen cg(parser);
-	cg.generate();
+		auto state = new State(cg.pack.variablesSize, cg.pack.constant);
+		auto nvm = new StackVM<vector<Instruction>::iterator>(cg.pack.instructions.begin());
+		nvm->setState(state);
+		nvm->execute();
 
-	auto state = new State(cg.pack.variablesSize, cg.pack.constant);
-	auto nvm = new StackVM<vector<Instruction>::iterator>(cg.pack.instructions.begin());
-	nvm->setState(state);
-	nvm->execute();
+		delete state;
+		delete nvm;
+	}
+	else
+	{
+		for (auto i = parser.getMessages().begin(); i != parser.getMessages().end(); ++i)
+		{
+			std::cout << *i;
+		}
+	}
 
-	delete state;
-	delete nvm;
+
 
 
 	string ch;

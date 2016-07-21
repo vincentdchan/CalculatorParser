@@ -13,8 +13,9 @@ namespace parser
 	}
 
 	Parser::Parser(Parser&& _parser) :
+		_MessageContainer(_parser),
 		lexer(_parser.lexer), ok(_parser.ok), 
-		_messages(_parser._messages), ast_root(move(_parser.ast_root))
+		ast_root(move(_parser.ast_root))
 	{ }
 
 	void Parser::parse()
@@ -29,16 +30,18 @@ namespace parser
 	}
 	*/
 
+	/*
 	void Parser::ReportMessage(const string& _Str, Parser::MESSAGE_TYPE _mt)
 	{
-		_messages.push_back(make_pair(_Str, _mt));
+		messages.push_back(make_pair(_Str, _mt));
 	}
 
 	void Parser::ReportError(const string& _Str)
 	{
 		ok = false;
-		_messages.push_back(make_pair(_Str, Parser::MESSAGE_TYPE::ERROR));
+		messages.push_back(make_pair(_Str, Parser::MESSAGE_TYPE::ERROR));
 	}
+	*/
 
 	Token Parser::nextToken()
 	{

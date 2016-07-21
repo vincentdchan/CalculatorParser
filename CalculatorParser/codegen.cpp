@@ -64,7 +64,7 @@ namespace codegen
 			pack.instructions.push_back(Instruction(VM_CODE::Add, 0));
 			break;
 		case OperatorType::SUB:
-			pack.instructions.push_back(Instruction(VM_CODE::Add, 0));
+			pack.instructions.push_back(Instruction(VM_CODE::Sub, 0));
 			break;
 		case OperatorType::MUL:
 			pack.instructions.push_back(Instruction(VM_CODE::Mul, 0));

@@ -3,6 +3,7 @@
 #include <cinttypes>
 #include "lex.h"
 #include "ast.h"
+#include "util.h"
 #include <memory>
 #include <stack>
 #include <list>
@@ -12,7 +13,7 @@ namespace parser
 {
 	using namespace lex;
 
-	class Parser final
+	class Parser final : public utils::_MessageContainer
 	{
 	public:
 		enum struct MESSAGE_TYPE
@@ -26,12 +27,16 @@ namespace parser
 		Token nextToken();
 		Token lookahead;
 		void parse();
+		/*
 		void ReportMessage(const string&, MESSAGE_TYPE _mt);
 		void ReportError(const string&);
+		*/
 		bool isOk() const { return ok; }
 
 		std::unique_ptr<Node> ast_root;
 		~Parser() {}
+
+		// list<pair<string, MESSAGE_TYPE> > messages;
 	private:
 		bool ok;
 		std::unique_ptr<Node> parseBlock();
@@ -47,7 +52,6 @@ namespace parser
 		Parser(const Parser&) = delete;
 		Parser& operator=(const Parser&) = delete;
 		Lexer& lexer;
-		list<pair<string, MESSAGE_TYPE> > _messages;
 		inline bool match(Token::TYPE t) { return lookahead.type() == t; } // just judge
 		inline bool expect(Token::TYPE t)
 		{

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <tuple>
 #include <list>
+#include <utility>
 #include "token.h"
 
 namespace utils
@@ -15,8 +16,16 @@ namespace utils
 			WARNING,
 			ERROR
 		};
-		_MessageContainer(): _hasError(false) {}
 		typedef std::tuple<std::string, lex::Location, MESSAGE_TYPE> MESSAGE;
+
+		_MessageContainer(): _hasError(false) {}
+		_MessageContainer(const _MessageContainer& _con):
+			_messages(_con._messages), _hasError(_con._hasError)
+		{}
+		_MessageContainer(_MessageContainer&& _con) :
+			_messages(std::move(_con._messages)), _hasError(_con._hasError)
+		{}
+
 		void ReportMessage(const std::string& _content, lex::Location _loc, MESSAGE_TYPE _mt)
 		{
 			_messages.push_back(std::make_tuple(std::move(_content), std::move(_loc), _mt));
@@ -34,7 +43,7 @@ namespace utils
 		{
 			_messages.push_back(std::make_tuple(std::move(_content), std::move(_loc), MESSAGE_TYPE::NORMAL));
 		}
-		std::list<MESSAGE> getList()
+		const std::list<MESSAGE>& getMessages()
 		{
 			return _messages;
 		}
