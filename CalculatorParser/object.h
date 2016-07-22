@@ -132,6 +132,8 @@ namespace runtime
 			case OperatorType::MOD:
 				if (isSmallInt() && that.isSmallInt())
 					return Object(value.si % that.value.si);
+				else if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
+					return Object(fmod(toNumber(*this), toNumber(that)));
 				break;
 			case OperatorType::POW:
 				if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
