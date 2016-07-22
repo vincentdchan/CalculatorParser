@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <utility>
+#include <memory>
 #include "lex.h"
 #include "scanner.h"
 #include "ast.h"
@@ -32,13 +33,10 @@ int main()
 		codegen::CodeGen cg(parser);
 		cg.generate();
 
-		auto state = new State(cg.pack.variablesSize, cg.pack.constant);
-		auto nvm = new StackVM<vector<Instruction>::iterator>(cg.pack.instructions.begin());
-		nvm->setState(state);
+		auto state = make_unique<State>(cg.pack.variablesSize, cg.pack.constant);
+		auto nvm = make_unique<StackVM<vector<Instruction>::iterator> >(cg.pack.instructions.begin());
+		nvm->setState(state.get());
 		nvm->execute();
-
-		delete state;
-		delete nvm;
 	}
 	else
 	{

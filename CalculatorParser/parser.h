@@ -1,13 +1,12 @@
 #pragma once
 
 #include <cinttypes>
-#include "lex.h"
-#include "ast.h"
-#include "util.h"
-#include <memory>
 #include <stack>
 #include <list>
 #include <iostream>
+#include "lex.h"
+#include "ast.h"
+#include "util.h"
 
 namespace parser
 {
@@ -27,31 +26,28 @@ namespace parser
 		Token nextToken();
 		Token lookahead;
 		void parse();
-		/*
-		void ReportMessage(const string&, MESSAGE_TYPE _mt);
-		void ReportError(const string&);
-		*/
 		bool isOk() const { return ok; }
+		inline Node* getRoot() { return ast_root; }
 
-		std::unique_ptr<Node> ast_root;
-		~Parser() {}
-
-		// list<pair<string, MESSAGE_TYPE> > messages;
+		~Parser();
 	private:
 		bool ok;
-		std::unique_ptr<Node> parseBlock();
-		std::unique_ptr<Node> parseLine();
-		std::unique_ptr<Node> parseLetExpr();
-		std::unique_ptr<Node> parseAssignment();
-		std::unique_ptr<Node> parseUnaryExpr();
-		std::unique_ptr<Node> parseBinaryExpr();
+		Node* ast_root;
+
+		Node* parseBlock();
+		Node* parseLine();
+		Node* parseLetExpr();
+		Node* parseAssignment();
+		Node* parseUnaryExpr();
+		Node* parseBinaryExpr();
 		// Node* parseIfStmt();
-		std::unique_ptr<Node> parseWhileStmt();
-		// std::unique_ptr<Node> parseDefStmt();
+		Node* parseWhileStmt();
+		// Node* parseDefStmt();
 		Parser() = delete;
 		Parser(const Parser&) = delete;
 		Parser& operator=(const Parser&) = delete;
 		Lexer& lexer;
+		std::list<Node*> _node_list;
 		inline bool match(Token::TYPE t) { return lookahead.type() == t; } // just judge
 		inline bool expect(Token::TYPE t)
 		{
@@ -66,6 +62,21 @@ namespace parser
 				return false;
 			}
 		}
+
+		//================================================
+		// record all the pointers of Node value.
+		// it can be clear when the parser is destructing
+		//
+		// make_node is similar to make_unqiue
+		template<typename _Ty, typename... _Types>
+		_Ty* make_node(_Types&&... args)
+		{
+			_Ty* _node = new _Ty(std::forward<_Types>(args)...);
+			_node_list.push_back(_node);
+			make_unique<int>(3);
+			return _node;
+		}
+
 	};
 
 }

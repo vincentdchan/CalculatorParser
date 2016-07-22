@@ -1,7 +1,6 @@
 #pragma once
 #include <cinttypes>
 #include <vector>
-#include <memory>
 #include "token.h"
 
 #define NODE_LIST(V) \
@@ -53,21 +52,20 @@ namespace parser
 	{
 	public:
 		AssignmentNode() {}
-		AssignmentNode(const std::string& _id, std::unique_ptr<Node> _exp):
-			identifier(_id), expression(std::move(_exp))
+		AssignmentNode(const std::string& _id, Node* _exp = nullptr):
+			identifier(_id), expression(_exp)
 		{}
+		virtual AssignmentNode* asAssignment() override { return this; }
 
 		std::string identifier;
-		std::unique_ptr<Node> expression;
-
-		virtual AssignmentNode* asAssignment() override { return this; }
+		Node* expression;
 	};
 
 	class BlockExprNode : public Node
 	{
 	public:
 		BlockExprNode() {}
-		std::vector<std::unique_ptr<Node> > children;
+		std::vector<Node*> children;
 		virtual BlockExprNode* asBlockExpression() override { return this; }
 	};
 
@@ -75,27 +73,27 @@ namespace parser
 	{
 	public:
 		UnaryExprNode(OperatorType _op = OperatorType::ILLEGAL_OP, 
-			std::unique_ptr<Node> _after = nullptr):
-			op(_op), child(std::move(_after))
+			Node* _after = nullptr):
+			op(_op), child(_after)
 		{}
 		virtual UnaryExprNode* asUnaryExpression() override { return this; }
 		OperatorType op;
-		std::unique_ptr<Node> child;
+		Node* child;
 	};
 
 	class BinaryExprNode : public Node
 	{
 	public:
 		BinaryExprNode(OperatorType _op = OperatorType::ILLEGAL_OP, 
-			std::unique_ptr<Node> _l = nullptr, 
-			std::unique_ptr<Node> _r = nullptr):
-			op(_op), left(std::move(_l)), right(std::move(_r))
+			Node* _left = nullptr, 
+			Node* _right = nullptr):
+			op(_op), left(_left), right(_right)
 		{}
 		virtual BinaryExprNode* asBinaryExpression() override { return this; }
 
 		OperatorType op;
-		std::unique_ptr<Node> left;
-		std::unique_ptr<Node> right;
+		Node* left;
+		Node* right;
 	};
 
 	class NumberNode : public Node
@@ -112,31 +110,31 @@ namespace parser
 	class IfStmtNode : public Node
 	{
 	public:
-		IfStmtNode(std::unique_ptr<Node> _exp = nullptr, 
-			std::unique_ptr<Node> _true = nullptr, 
-			std::unique_ptr<Node> _false = nullptr):
-			expression(std::move(_exp)), 
-			true_branch(std::move(_true)), 
-			false_branch(std::move(_false))
+		IfStmtNode(Node* _exp = nullptr, 
+			Node* _true = nullptr, 
+			Node* _false = nullptr):
+			expression(_exp), 
+			true_branch(_true), 
+			false_branch(_false)
 		{}
  		virtual IfStmtNode* asIfStmt() override { return this; }
 
-		std::unique_ptr<Node> expression;
-		std::unique_ptr<Node> true_branch;
-		std::unique_ptr<Node> false_branch;
+		Node* expression;
+		Node* true_branch;
+		Node* false_branch;
 	};
 
 	class WhileStmtNode : public Node
 	{
 	public:
-		WhileStmtNode(std::unique_ptr<Node> _con = nullptr, 
-			std::unique_ptr<Node> _cont = nullptr) :
-			expression(std::move(_con)), child(std::move(_cont))
+		WhileStmtNode(Node* _con = nullptr, 
+			Node* _cont = nullptr) :
+			expression(_con), child(_cont)
 		{}
  		virtual WhileStmtNode* asWhileStmt() override { return this; }
 
-		std::unique_ptr<Node> expression;
-		std::unique_ptr<Node> child;
+		Node* expression;
+		Node* child;
 	};
 
 	class DefStmtNode : public Node
@@ -145,7 +143,6 @@ namespace parser
 		DefStmtNode() {}
 	private:
 		std::string _name;
-		std::unique_ptr<std::vector<std::string> > _parameters;
 		Node* _content;
 	};
 

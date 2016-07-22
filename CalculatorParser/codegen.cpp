@@ -12,7 +12,7 @@ namespace codegen
 
 	void CodeGen::generate()
 	{
-		visit(_parser.ast_root.get());
+		visit(_parser.getRoot());
 		pack.instructions.push_back(Instruction(VM_CODE::STOP, 0));
 		pack.variablesSize = var_id.size();
 	}
@@ -43,8 +43,8 @@ namespace codegen
 	{
 		for (auto i = _node->children.begin(); i != _node->children.end(); ++i)
 		{
-			visit(i->get());
-			if (i->get()->asBinaryExpression())
+			visit(*i);
+			if ((*i)->asBinaryExpression())
 				pack.instructions.push_back(Instruction(VM_CODE::Out, 0));
 		}
 	}
@@ -56,8 +56,8 @@ namespace codegen
 
 	void CodeGen::visit(BinaryExprNode* _node)
 	{
-		visit(_node->left.get());
-		visit(_node->right.get());
+		visit(_node->left);
+		visit(_node->right);
 		switch (_node->op)
 		{
 		case OperatorType::ADD:
@@ -113,7 +113,7 @@ namespace codegen
 		else
 			_index = var_id[_name];
 
-		visit(_node->expression.get());
+		visit(_node->expression);
 		pack.instructions.push_back(Instruction(VM_CODE::StoreV, _index));
 	}
 

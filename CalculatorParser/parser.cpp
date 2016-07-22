@@ -23,26 +23,6 @@ namespace parser
 		this->ast_root = this->parseBlock();
 	}
 
-	/*
-	void Parser::next()
-	{
-		lookahead = lexer.read();
-	}
-	*/
-
-	/*
-	void Parser::ReportMessage(const string& _Str, Parser::MESSAGE_TYPE _mt)
-	{
-		messages.push_back(make_pair(_Str, _mt));
-	}
-
-	void Parser::ReportError(const string& _Str)
-	{
-		ok = false;
-		messages.push_back(make_pair(_Str, Parser::MESSAGE_TYPE::ERROR));
-	}
-	*/
-
 	Token Parser::nextToken()
 	{
 		Token tmp = move(lookahead);
@@ -61,9 +41,9 @@ namespace parser
 	/*   Paring                       */
 	/**********************************/
 
-	unique_ptr<Node> Parser::parseBlock()
+	Node* Parser::parseBlock()
 	{
-		unique_ptr<BlockExprNode> _block(new BlockExprNode());
+		auto _block = make_node<BlockExprNode>();
 		while (!match(Token::TYPE::ENDFILE))
 		{
 			auto _line = parseLine();
@@ -72,13 +52,13 @@ namespace parser
 				_block->children.push_back(move(_line));
 			}
 		}
-		return move(_block);
+		return _block;
 	}
 
-	unique_ptr<Node> Parser::parseLine()
+	Node* Parser::parseLine()
 	{
 		// Line:: BinaryExpr ENDLINE
-		unique_ptr<Node> node;
+		Node* node;
 		if (match(Token::TYPE::LET))
 			node = parseLetExpr();
 		else
@@ -86,17 +66,17 @@ namespace parser
 		if (!match(Token::TYPE::ENDLINE))
 			ReportError("Exprected end of line");
 		nextToken();
-		return move(node);
+		return node;
 	}
 
-	unique_ptr<Node> Parser::parseLetExpr()
+	Node* Parser::parseLetExpr()
 	{
 		expect(Token::TYPE::LET);
 		nextToken();
 		return parseAssignment();
 	}
 
-	unique_ptr<Node> Parser::parseAssignment()
+	Node* Parser::parseAssignment()
 	{
 		expect(Token::TYPE::IDENTIFIER);
 
@@ -104,14 +84,11 @@ namespace parser
 		nextToken();
 		expect(Token::TYPE::ASSIGN);
 		nextToken();
-		unique_ptr<Node> _exp = parseBinaryExpr();
-		if (_exp)
-			return unique_ptr<Node>(new AssignmentNode(_id, move(_exp)));
-		else
-			return nullptr;
+		Node* _exp = parseBinaryExpr();
+		return make_node<AssignmentNode>(_id, _exp);
 	}
 
-	unique_ptr<Node> Parser::parseUnaryExpr()
+	Node* Parser::parseUnaryExpr()
 	{
 		// UnaryExpr: ( + | - )? Int
 		if (match(Token::TYPE::ADD))
@@ -120,15 +97,15 @@ namespace parser
 			if (match(Token::TYPE::NUMBER))
 			{
 				double _data = std::stod(*lookahead.pLiteral);
-				auto numberNode = unique_ptr<Node>(new NumberNode(_data));
+				auto numberNode = make_node<NumberNode>(_data);
 				nextToken();
-				return move(numberNode);
+				return numberNode;
 			}
 			else if (match(Token::TYPE::IDENTIFIER))
 			{
 				string s = *lookahead.pLiteral;
 				nextToken();
-				return unique_ptr<Node>(new IdentifierNode(s));
+				return make_node<IdentifierNode>(s);
 			}
 			else
 			{
@@ -143,29 +120,29 @@ namespace parser
 			{
 				double _data = std::stod(*lookahead.pLiteral);
 				nextToken();
-				return unique_ptr<Node>(new NumberNode(_data * -1));
+				return make_node<NumberNode>(_data * -1);
 			}
 			else if (match(Token::TYPE::IDENTIFIER))
 			{
 				Token _t = move(nextToken());
-				auto _node = unique_ptr<Node>(new IdentifierNode(*_t.pLiteral));
-				return unique_ptr<Node>(new UnaryExprNode(OperatorType::SUB, move(_node)));
+				auto _node = make_node<IdentifierNode>(*_t.pLiteral);
+				return make_node<UnaryExprNode>(OperatorType::SUB, _node);
 			}
 			else
 			{
-				ReportError("Expected number");
+				ReportError("Expected number or identifier");
 				return nullptr;
 			}
 		}
 		else if (match(Token::TYPE::NUMBER))
 		{
 			Token _t = move(nextToken());
-			return unique_ptr<Node>(new NumberNode(stod(*_t.pLiteral)));
+			return make_node<NumberNode>(stod(*_t.pLiteral));
 		}
 		else if (match(Token::TYPE::IDENTIFIER))
 		{
 			Token _t = move(nextToken());
-			return unique_ptr<Node>(new IdentifierNode(*_t.pLiteral));
+			return make_node<IdentifierNode>(*_t.pLiteral);
 		}
 		else
 		{
@@ -174,15 +151,15 @@ namespace parser
 		}
 	}
 
-	unique_ptr<Node> Parser::parseBinaryExpr()
+	Node* Parser::parseBinaryExpr()
 	{
 		// BinaryExpr: Unary { OP Unary }
 		stack<OperatorType> opStack;
-		stack<unique_ptr<Node> > nodeStack;
+		stack<Node*> nodeStack;
 		auto _begin = parseUnaryExpr();
 		if (_begin == nullptr)
 			return nullptr;
-		nodeStack.push(move(_begin));
+		nodeStack.push(_begin);
 
 		while (Token::isOperator(lookahead))
 		{
@@ -192,38 +169,44 @@ namespace parser
 				opStack.push(Token::toOperator(lookahead));
 				nextToken();
 				auto l = parseUnaryExpr();
-				nodeStack.push(move(l));
+				nodeStack.push(l);
 			}
 			else
 			{
 				while (!opStack.empty() && prec <= getPrecedence(opStack.top()))
 				{
-					unique_ptr<Node> l1, l2;
-					l1 = move(nodeStack.top()); nodeStack.pop();
-					l2 = move(nodeStack.top()); nodeStack.pop();
-					nodeStack.push(unique_ptr<Node>(new BinaryExprNode(opStack.top(), move(l2), move(l1))));
+					Node *l1, *l2;
+					l1 = nodeStack.top(); nodeStack.pop();
+					l2 = nodeStack.top(); nodeStack.pop();
+					nodeStack.push(make_node<BinaryExprNode>(opStack.top(), l2, l1));
 					opStack.pop();
 				}
 			}
 		}
 		while (!opStack.empty())
 		{
-			unique_ptr<Node> l1, l2;
-			l1 = move(nodeStack.top()); nodeStack.pop();
-			l2 = move(nodeStack.top()); nodeStack.pop();
-			nodeStack.push(unique_ptr<Node>(new BinaryExprNode(opStack.top(), move(l2), move(l1))));
+			Node *l1, *l2;
+			l1 = nodeStack.top(); nodeStack.pop();
+			l2 = nodeStack.top(); nodeStack.pop();
+			nodeStack.push(make_node<BinaryExprNode>(opStack.top(), l2, l1));
 			opStack.pop();
 		}
-		return move(nodeStack.top());
+		return nodeStack.top();
 	}
 
-	unique_ptr<Node> Parser::parseWhileStmt()
+	Node* Parser::parseWhileStmt()
 	{
 		expect(Token::TYPE::WHILE);
 		nextToken();
 		auto _condition = parseBinaryExpr();
 		auto _block = parseBlock();
-		return unique_ptr<Node>(new WhileStmtNode(move(_condition), move(_block)));
+		return make_node<WhileStmtNode>(_condition, _block);
+	}
+
+	Parser::~Parser()
+	{
+		for (auto i = _node_list.begin(); i != _node_list.end(); ++i)
+			delete *i;
 	}
 
 }
