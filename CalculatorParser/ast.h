@@ -99,12 +99,13 @@ namespace parser
 	class NumberNode : public Node
 	{
 	public:
-		NumberNode(double _decimal = 0.0):
-			value(_decimal)
+		NumberNode(double _decimal = 0.0, bool _mi = false):
+			value(_decimal), maybeInt(_mi)
 		{}
 		virtual NumberNode* asNumber() override { return this; }
 
 		double value;
+		bool maybeInt;
 	};
 
 	class IfStmtNode : public Node

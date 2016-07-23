@@ -44,7 +44,10 @@ namespace codegen
 		for (auto i = _node->children.begin(); i != _node->children.end(); ++i)
 		{
 			visit(*i);
-			if ((*i)->asBinaryExpression())
+			if ((*i)->asUnaryExpression() || 
+				(*i)->asBinaryExpression() || 
+				(*i)->asIdentifier() || 
+				(*i)->asNumber())
 				pack.instructions.push_back(Instruction(VM_CODE::Out, 0));
 		}
 	}
@@ -87,7 +90,10 @@ namespace codegen
 	void CodeGen::visit(NumberNode* _node)
 	{
 		auto index = pack.constant.size();
-		pack.constant.push_back(Object(_node->value));
+		if (_node->maybeInt)
+			pack.constant.push_back(Object(static_cast<int>(_node->value)));
+		else
+			pack.constant.push_back(Object(_node->value));
 		pack.instructions.push_back(Instruction(VM_CODE::LoadC, index));
 	}
 

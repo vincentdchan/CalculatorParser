@@ -34,11 +34,13 @@ namespace parser
 		bool ok;
 		Node* ast_root;
 
+		Node* parseChunk();
 		Node* parseBlock();
-		Node* parseLine();
+		Node* parseStatement();
 		Node* parseLetExpr();
 		Node* parseAssignment();
 		Node* parseUnaryExpr();
+		Node* parseExpression();
 		Node* parseBinaryExpr();
 		// Node* parseIfStmt();
 		Node* parseWhileStmt();
@@ -48,14 +50,14 @@ namespace parser
 		Parser& operator=(const Parser&) = delete;
 		Lexer& lexer;
 		std::list<Node*> _node_list;
-		inline bool match(Token::TYPE t) { return lookahead.type() == t; } // just judge
+		inline bool match(Token::TYPE t) { return lookahead.type == t; } // just judge
 		inline bool expect(Token::TYPE t)
 		{
-			if (lookahead.type() == t)
+			if (lookahead.type == t)
 				return true;
 			else
 			{
-				auto num = static_cast<int>(lookahead.type());
+				auto num = static_cast<int>(lookahead.type);
 				// warning: here may cause crash if num is not in range
 				ReportError(string("Unexpected token: ") + TokenName[num]);
 				ok = false;

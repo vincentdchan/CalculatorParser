@@ -16,6 +16,8 @@ namespace lex
 	public:
 		typedef shared_ptr<string> pString;
 		Lexer(istream& s);
+		Lexer(const Lexer&) = delete;
+		Lexer& operator=(const Lexer&) = delete;
 		Token read();
 		inline void finish();
 		bool isFinish()
@@ -24,7 +26,13 @@ namespace lex
 		}
 		static bool isDigit(uc32 t);
 		static bool isAlphabet(uc32 t);
-		// string consumeLiteral();
+		~Lexer()
+		{
+			for (auto i = _literal_list.begin(); i != _literal_list.end(); ++i)
+			{
+				delete *i;
+			}
+		}
 	private:
 		Lexer();
 		bool readline();
@@ -41,6 +49,17 @@ namespace lex
 		unsigned int linenumber, _beginpos, _endpos;
 		// stream
 		istream &ist;
+
+		std::list<std::string*> _literal_list;
+
+		template<typename... _Types>
+		inline std::string* make_literal(_Types... Args)
+		{
+			std::string* _str = new std::string(std::forward<_Types>(Args)...);
+			_literal_list.push_back(_str);
+			return _str;
+		}
+
 	};
 
 }

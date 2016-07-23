@@ -29,7 +29,6 @@ typedef bool TBool;
 	V(OPEN_PAREN) \
 	V(CLOSE_PAREN) \
 	V(NUMBER) \
-	V(ENDLINE) \
 	V(ENDFILE) 
 
 
@@ -61,6 +60,6 @@ typedef bool TBool;
 
 inline int getPrecedence(OperatorType ot)
 {
-	if (ot >= OperatorType::OP_NUM || ot < 0) return -1;
+	if (ot >= OperatorType::OP_NUM || ot < 0) return 0;
 	return OpreatorPrecedence[ot];
 }

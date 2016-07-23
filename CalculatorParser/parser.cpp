@@ -20,7 +20,7 @@ namespace parser
 
 	void Parser::parse()
 	{
-		this->ast_root = this->parseBlock();
+		this->ast_root = this->parseChunk();
 	}
 
 	Token Parser::nextToken()
@@ -30,43 +30,47 @@ namespace parser
 		return tmp;
 	}
 
-	/*
-	string Parser::consumeLiteral()
-	{
-		return lexer.consumeLiteral();
-	}
-	*/
-
 	/**********************************/
 	/*   Paring                       */
 	/**********************************/
 
+	// chunk ::= block
+	Node* Parser::parseChunk()
+	{
+		return parseBlock();
+	}
+
+
+	// block ::= { stat }
+	// First(block) = First(stat)
 	Node* Parser::parseBlock()
 	{
 		auto _block = make_node<BlockExprNode>();
-		while (!match(Token::TYPE::ENDFILE))
+		
+		do
 		{
-			auto _line = parseLine();
-			if (_line != nullptr)
-			{
-				_block->children.push_back(move(_line));
-			}
-		}
+			_block->children.push_back(parseStatement());
+		} while (match(Token::TYPE::IDENTIFIER) ||
+			match(Token::TYPE::NUMBER) ||
+			match(Token::TYPE::LET) ||
+			match(Token::TYPE::OPEN_PAREN) ||
+			Token::isOperator(lookahead)
+			);
+
 		return _block;
 	}
 
-	Node* Parser::parseLine()
+	Node* Parser::parseStatement()
 	{
-		// Line:: BinaryExpr ENDLINE
-		Node* node;
 		if (match(Token::TYPE::LET))
-			node = parseLetExpr();
+			return parseLetExpr();
 		else
-			node = parseBinaryExpr();
-		if (!match(Token::TYPE::ENDLINE))
-			ReportError("Exprected end of line");
-		nextToken();
-		return node;
+			return parseExpression();
+	}
+
+	Node* Parser::parseExpression()
+	{
+		return parseBinaryExpr();
 	}
 
 	Node* Parser::parseLetExpr()
@@ -80,7 +84,7 @@ namespace parser
 	{
 		expect(Token::TYPE::IDENTIFIER);
 
-		string _id = *lookahead.pLiteral;
+		string _id = *lookahead._literal;
 		nextToken();
 		expect(Token::TYPE::ASSIGN);
 		nextToken();
@@ -96,14 +100,14 @@ namespace parser
 			nextToken();
 			if (match(Token::TYPE::NUMBER))
 			{
-				double _data = std::stod(*lookahead.pLiteral);
-				auto numberNode = make_node<NumberNode>(_data);
+				double _data = lookahead._double;
+				auto numberNode = make_node<NumberNode>(_data, lookahead.maybeInt);
 				nextToken();
 				return numberNode;
 			}
 			else if (match(Token::TYPE::IDENTIFIER))
 			{
-				string s = *lookahead.pLiteral;
+				string s = *lookahead._literal;
 				nextToken();
 				return make_node<IdentifierNode>(s);
 			}
@@ -118,14 +122,15 @@ namespace parser
 			nextToken();
 			if (match(Token::Token::NUMBER))
 			{
-				double _data = std::stod(*lookahead.pLiteral);
+				double _data = lookahead._double;
+				auto _node = make_node<NumberNode>(_data, lookahead.maybeInt);
 				nextToken();
-				return make_node<NumberNode>(_data * -1);
+				return _node;
 			}
 			else if (match(Token::TYPE::IDENTIFIER))
 			{
-				Token _t = move(nextToken());
-				auto _node = make_node<IdentifierNode>(*_t.pLiteral);
+				Token _t = nextToken();
+				auto _node = make_node<IdentifierNode>(*_t._literal);
 				return make_node<UnaryExprNode>(OperatorType::SUB, _node);
 			}
 			else
@@ -136,13 +141,21 @@ namespace parser
 		}
 		else if (match(Token::TYPE::NUMBER))
 		{
-			Token _t = move(nextToken());
-			return make_node<NumberNode>(stod(*_t.pLiteral));
+			Token _t = nextToken();
+			return make_node<NumberNode>(_t._double, _t.maybeInt);
 		}
 		else if (match(Token::TYPE::IDENTIFIER))
 		{
-			Token _t = move(nextToken());
-			return make_node<IdentifierNode>(*_t.pLiteral);
+			Token _t = nextToken();
+			return make_node<IdentifierNode>(*_t._literal);
+		}
+		else if (match(Token::TYPE::OPEN_PAREN))
+		{
+			nextToken();
+			auto _node = parseBinaryExpr();
+			expect(Token::TYPE::CLOSE_PAREN);
+			nextToken();
+			return _node;
 		}
 		else
 		{

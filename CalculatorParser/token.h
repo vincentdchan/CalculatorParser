@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
-#include <utility>
-#include <memory>
+#include <list>
 #include "CalculatorParser.h"
 
 
@@ -18,9 +17,8 @@ namespace lex
 		int begin, end;
 	};
 
-	class Token
+	struct Token
 	{
-	public:
 #define EXTEND_OP(NAME, STR, PRECEDENCE) NAME##,
 #define EXTEND_TOKEN(NAME) NAME##,
 		enum TYPE
@@ -31,102 +29,116 @@ namespace lex
 		};
 #undef EXTEND_OP
 #undef EXTEND_TOKEN
-		Location location;
-		std::unique_ptr<std::string> pLiteral;
 
-		Token(): _type(ILLEGAL)
+		TYPE type;
+		bool maybeInt;
+		Location location;
+
+		union
+		{
+			double _double;
+			std::string* _literal;
+		};
+
+		Token(): type(ILLEGAL), maybeInt(false)
 		{}
 
-		Token(const Token& _target) = delete;
-		/*
 		Token(const Token& _target)
 		{
-			_type = _target._type;
+			type = _target.type;
 			location = _target.location;
-			pLiteral = move(_target.pLiteral);
+			maybeInt = _target.maybeInt;
+
+			if (type == TYPE::NUMBER)
+				_double = _target._double;
+			else if (type == TYPE::IDENTIFIER)
+				_literal = _target._literal;
 		}
-		*/
 
 		Token(TYPE _t, Location _loc)
 		{
-			_type = _t;
+			type = _t;
 			location = _loc;
 		}
 
 
 		Token(Token&& _target)
 		{
-			_type = _target._type;
+			type = _target.type;
 			location = _target.location;
-			pLiteral = move(_target.pLiteral);
-		}
+			maybeInt = _target.maybeInt;
 
-		void set_type(TYPE t)
-		{
-			_type = t;
-		}
-
-		TYPE type() const
-		{
-			return  _type;
+			if (type == TYPE::NUMBER)
+				_double = _target._double;
+			else if (type == TYPE::IDENTIFIER)
+				_literal = _target._literal;
 		}
 
 		static bool isOperator(const Token& t)
 		{
-			return t.type() >= ADD && t.type() < ILLEGAL_OP;
+			return t.type >= ADD && t.type < ILLEGAL_OP;
 		}
 
 		static OperatorType toOperator(const Token& t)
 		{
-			if (t.type() >= Token::ADD && t.type() <= Token::ILLEGAL_OP)
-				return static_cast<OperatorType>(t.type());
+			if (t.type >= Token::ADD && t.type <= Token::ILLEGAL_OP)
+				return static_cast<OperatorType>(t.type);
 			else
 				return OperatorType::ILLEGAL_OP;
 		}
 
-		Token& operator=(const Token& _t) = delete;
-		/*
-		Token& operator=(const Token& _t)
+		Token& operator=(const Token& _target)
 		{
-			_type = _t._type;
-			location = _t.location;
+			type = _target.type;
+			location = _target.location;
+			maybeInt = _target.maybeInt;
+
+			if (type == TYPE::NUMBER)
+				_double = _target._double;
+			else if (type == TYPE::IDENTIFIER)
+				_literal = _target._literal;
+
 			return *this;
 		}
-		*/
 
-		Token& operator=(Token&& _t)
+		Token& operator=(Token&& _target)
 		{
-			_type = _t._type;
-			location = _t.location;
-			pLiteral = move(_t.pLiteral);
+			type = _target.type;
+			location = _target.location;
+			maybeInt = _target.maybeInt;
+
+			if (type == TYPE::NUMBER)
+				_double = _target._double;
+			else if (type == TYPE::IDENTIFIER)
+				_literal = _target._literal;
+
 			return *this;
 		}
 
 		bool operator==(const Token& t) const
 		{
-			return this->_type == t._type;
+			return this->type == t.type;
 		}
 
 		bool operator!=(const Token& t) const
 		{
-			return this->_type != t._type;
+			return this->type != t.type;
 		}
 
 		bool operator==(TYPE _t) const
 		{
-			return this->_type == _t;
+			return this->type == _t;
 		}
 
 		bool operator!=(TYPE _t) const
 		{
-			return this->_type != _t;
+			return this->type != _t;
 		}
 
 		operator bool() const
 		{
-			return type() != TYPE::ILLEGAL;
+			return type != TYPE::ILLEGAL;
 		}
-	private:
-		TYPE _type;
+
 	};
 }

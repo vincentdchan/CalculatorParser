@@ -15,7 +15,7 @@ namespace lex
 	{
 		if (!token_q.empty())
 		{
-			Token t = move(token_q.front());
+			Token t = token_q.front();
 			token_q.pop();
 			return t;
 		}
@@ -103,7 +103,6 @@ namespace lex
 					break;
 			}
 		}
-		token_q.push(Token(Token::Token::ENDLINE, Location(linenumber)));
 		++linenumber;
 		return true;
 	}
@@ -186,15 +185,15 @@ namespace lex
 		{
 			const unsigned int _begin = ic;
 			Token _t(Token::TYPE::IDENTIFIER, Location(linenumber, _begin, ic-1));
-			_t.pLiteral.reset(new string());
-			_t.pLiteral->push_back(str[ic]);
+			_t._literal = make_literal();
+			_t._literal->push_back(str[ic]);
 			ic++;
 			while (isDigit(str[ic]) || isAlphabet(str[ic]) || str[ic] == '_')
 			{
-				_t.pLiteral->push_back(str[ic]);
+				_t._literal->push_back(str[ic]);
 				ic++;
 			}
-			token_q.push(move(_t));
+			token_q.push(_t);
 		}
 		else
 		{
@@ -209,23 +208,25 @@ namespace lex
 		loc.begin = loc.end = ic;
 		loc.line = linenumber;
 
-		// string num;
+		string num;
 		if (isDigit(str[ic]))
 		{
-			t.set_type(Token::TYPE::NUMBER);
-			t.pLiteral.reset(new string());
-			t.pLiteral->push_back(str[ic++]);
+			t.type = Token::TYPE::NUMBER;
+			// t.pLiteral.reset(new string());
+			num.push_back(str[ic++]);
 			while (isDigit(str[ic]) || str[ic] == '.')
 			{
 				if (str[ic] == '.')
 				{
-					t.pLiteral->push_back(str[ic++]);
+					t.maybeInt = false;
+					num.push_back(str[ic++]);
 					if (isDigit(str[ic]))
 					{
 						while (isDigit(str[ic]))
-							t.pLiteral->push_back(str[ic++]);
+							num.push_back(str[ic++]);
 						loc.end = ic - 1;
-						token_q.push(move(t));
+						t._double = std::stod(num);
+						token_q.push(t);
 						return;
 					}
 					else
@@ -235,11 +236,13 @@ namespace lex
 				}
 				else // digit
 				{
-					t.pLiteral->push_back(str[ic++]);
+					num.push_back(str[ic++]);
 				}
 			}
 			loc.end = ic - 1;
-			token_q.push(move(t));
+			t.maybeInt = true;
+			t._double = std::stod(num);
+			token_q.push(t);
 		}
 		else
 		{

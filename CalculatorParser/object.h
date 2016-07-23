@@ -99,36 +99,19 @@ namespace runtime
 			type = TYPE::BOOL;
 		}
 
+#define GETVALUE(OBJ) (OBJ.isSmallInt() ? OBJ.value.si : toNumber(OBJ))
 		Object applyOperator(OperatorType op, Object that) const
 		{
 			switch (op)
 			{
 			case OperatorType::ADD:
-				if (isSmallInt() && that.isSmallInt())
-					// not a proper way
-					// you should check if overflow after they plus
-					return Object(value.si + that.value.si);
-				else if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
-					return Object(toNumber(*this) + toNumber(that));
-				break;
+				return Object(GETVALUE((*this)) + GETVALUE(that));
 			case OperatorType::SUB:
-				if (isSmallInt() && that.isSmallInt())
-					return Object(value.si - that.value.si);
-				else if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
-					return Object(toNumber(*this) - toNumber(that));
-				break;
+				return Object(GETVALUE((*this)) - GETVALUE(that));
 			case OperatorType::MUL:
-				if (isSmallInt() && that.isSmallInt())
-					return Object(value.si * that.value.si);
-				else if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
-					return Object(toNumber(*this) * toNumber(that));
-				break;
+				return Object(GETVALUE((*this)) * GETVALUE(that));
 			case OperatorType::DIV:
-				if (isSmallInt() && that.isSmallInt())
-					return Object(value.si / that.value.si);
-				else if ((isSmallInt() || isNumber()) && (that.isSmallInt() || that.isNumber()))
-					return Object(toNumber(*this) / toNumber(that));
-				break;
+				return Object(GETVALUE((*this)) / GETVALUE(that));
 			case OperatorType::MOD:
 				if (isSmallInt() && that.isSmallInt())
 					return Object(value.si % that.value.si);

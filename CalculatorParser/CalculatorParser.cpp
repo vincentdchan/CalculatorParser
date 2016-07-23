@@ -1,4 +1,4 @@
-// CalculatorParser.cpp : Defines the entry point for the console application.
+// Calculator.cpp : Defines the entry point for the console application.
 //
 
 #include "stdafx.h"
@@ -14,14 +14,22 @@
 #include "svm.hpp"
 #include "codegen.h"
 
-int main()
+const char* DEFAULT_FILENAME = "source.txt";
+
+int main(int argc, char** argv)
 {
 	using namespace lex;
 	using namespace parser;
 	using namespace runtime::StackVM;
 
+	char *filename;
+	if (argc > 1)
+		filename = argv[1];
+	else
+		filename = const_cast<char*>(DEFAULT_FILENAME);
+
 	fstream fs;
-	fs.open("source.txt", fstream::in);
+	fs.open(filename, fstream::in);
 	Lexer lexer(fs);
 
 	Parser parser(lexer);
@@ -45,9 +53,6 @@ int main()
 			std::cout << *i;
 		}
 	}
-
-
-
 
 	string ch;
 	cin >> ch;
